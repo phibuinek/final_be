@@ -10,12 +10,12 @@ import { Role } from '../common/enums/role.enum';
 @ApiTags('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
@@ -25,8 +25,8 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get all users (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   findAll() {
@@ -34,8 +34,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get user by ID (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -44,7 +44,7 @@ export class UsersController {
   }
 
   @Patch(':id/roles')
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Update user roles (Admin only)' })
   @ApiResponse({ status: 200, description: 'User roles updated successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
@@ -54,8 +54,8 @@ export class UsersController {
   }
 
   @Patch(':id/deactivate')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Deactivate user (Admin only)' })
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: 'Deactivate a user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deactivated successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })

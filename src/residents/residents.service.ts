@@ -1,17 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Resident, ResidentDocument } from './schemas/resident.schema';
+import { Resident } from './schemas/resident.schema';
 import { CreateResidentDto } from './dto/create-resident.dto';
 import { UpdateResidentDto } from './dto/update-resident.dto';
 import { VitalSignDto } from './dto/vital-sign.dto';
 import { CarePlanDto } from './dto/care-plan.dto';
 import { ActivityDto } from './dto/activity.dto';
+import { MedicationDto } from './dto/medication.dto';
 
 @Injectable()
 export class ResidentsService {
   constructor(
-    @InjectModel(Resident.name) private residentModel: Model<ResidentDocument>,
+    @InjectModel(Resident.name) private residentModel: Model<Resident>,
   ) {}
 
   async create(createResidentDto: CreateResidentDto): Promise<Resident> {
@@ -165,47 +166,6 @@ export class ResidentsService {
     ];
   }
 
-  // Care Plan methods
-  async createCarePlan(carePlanDto: CarePlanDto): Promise<any> {
-    const resident = await this.residentModel.findById(carePlanDto.residentId).exec();
-    
-    if (!resident) {
-      throw new NotFoundException(`Resident with ID ${carePlanDto.residentId} not found`);
-    }
-
-    // In a real application, this would save to a CarePlan collection
-    // For now, we'll just return the DTO with a mock ID
-    return {
-      id: 'mock-care-plan-id',
-      ...carePlanDto,
-      createdAt: new Date(),
-    };
-  }
-
-  async getCarePlans(residentId: string): Promise<any[]> {
-    const resident = await this.residentModel.findById(residentId).exec();
-    
-    if (!resident) {
-      throw new NotFoundException(`Resident with ID ${residentId} not found`);
-    }
-
-    // In a real application, this would query the CarePlan collection
-    // For now, we'll just return a mock response
-    return [
-      {
-        id: 'mock-care-plan-id',
-        residentId,
-        title: 'Daily Care Plan',
-        description: 'Standard daily care for resident',
-        goals: ['Maintain hydration', 'Ensure proper nutrition'],
-        interventions: ['Offer water every 2 hours', 'Monitor food intake'],
-        startDate: new Date(),
-        endDate: null,
-        responsibleStaff: 'Staff Member',
-      },
-    ];
-  }
-
   // Activity methods
   async recordActivity(activityDto: ActivityDto): Promise<any> {
     const resident = await this.residentModel.findById(activityDto.residentId).exec();
@@ -246,5 +206,100 @@ export class ResidentsService {
         participationNotes: 'Enjoyed the fresh air',
       },
     ];
+  }
+
+  async addMedication(medicationDto: MedicationDto) {
+    const resident = await this.residentModel.findById(medicationDto.residentId);
+    if (!resident) {
+      throw new NotFoundException('Resident not found');
+    }
+
+    const medication = {
+      name: medicationDto.name,
+      dosage: medicationDto.dosage,
+      frequency: medicationDto.frequency,
+      startDate: medicationDto.startDate,
+      endDate: medicationDto.endDate,
+      instructions: medicationDto.instructions,
+      isActive: true
+    };
+
+    resident.medications.push(medication);
+    return resident.save();
+  }
+
+  async getMedications(id: string) {
+    const resident = await this.residentModel.findById(id);
+    if (!resident) {
+      throw new NotFoundException('Resident not found');
+    }
+    return resident.medications;
+  }
+
+  async updateMedication(residentId: string, medicationIndex: number, medicationDto: MedicationDto) {
+    const resident = await this.residentModel.findById(residentId);
+    if (!resident) {
+      throw new NotFoundException('Resident not found');
+    }
+
+    if (medicationIndex < 0 || medicationIndex >= resident.medications.length) {
+      throw new BadRequestException('Invalid medication index');
+    }
+
+    resident.medications[medicationIndex] = {
+      name: medicationDto.name,
+      dosage: medicationDto.dosage,
+      frequency: medicationDto.frequency,
+      startDate: medicationDto.startDate,
+      endDate: medicationDto.endDate,
+      instructions: medicationDto.instructions,
+      isActive: true
+    };
+
+    return resident.save();
+  }
+
+  async discontinueMedication(residentId: string, medicationIndex: number) {
+    const resident = await this.residentModel.findById(residentId);
+    if (!resident) {
+      throw new NotFoundException('Resident not found');
+    }
+
+    if (medicationIndex < 0 || medicationIndex >= resident.medications.length) {
+      throw new BadRequestException('Invalid medication index');
+    }
+
+    resident.medications[medicationIndex].isActive = false;
+    resident.medications[medicationIndex].endDate = new Date();
+
+    return resident.save();
+  }
+
+  // Care Plan methods
+  async createCarePlan(
+    residentId: string,
+    carePlanDto: CarePlanDto,
+  ): Promise<Resident> {
+    const carePlanData = {
+      ...carePlanDto,
+      actions: carePlanDto.actions || [],
+      startDate: carePlanDto.startDate || new Date(),
+    };
+
+    const updatedResident = await this.residentModel.findByIdAndUpdate(
+      residentId,
+      { $push: { carePlans: carePlanData } },
+      { new: true }
+    ).exec();
+
+    if (!updatedResident) {
+      throw new NotFoundException(`Resident with ID ${residentId} not found`);
+    }
+    return updatedResident;
+  }
+
+  async getCarePlans(residentId: string): Promise<any> {
+    const resident = await this.findOne(residentId);
+    return resident.carePlans;
   }
 } 

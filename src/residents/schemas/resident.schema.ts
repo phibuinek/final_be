@@ -4,6 +4,21 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export type ResidentDocument = Resident & Document;
 
+@Schema({ _id: false })
+class CarePlan {
+  @Prop({ required: true })
+  startDate: Date;
+
+  @Prop()
+  endDate: Date;
+
+  @Prop({ required: true })
+  description: string;
+
+  @Prop({ type: [String], required: true })
+  actions: string[];
+}
+
 @Schema({ timestamps: true })
 export class Resident {
   @Prop({ required: true, trim: true })
@@ -45,6 +60,22 @@ export class Resident {
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'FamilyMember' }] })
   @ApiProperty({ description: 'Family members related to the resident' })
   familyMembers: MongooseSchema.Types.ObjectId[];
+
+  @Prop([{
+    name: { type: String, required: true },
+    dosage: { type: String, required: true },
+    frequency: { type: String, required: true },
+    startDate: { type: Date, required: true },
+    endDate: Date,
+    instructions: String,
+    isActive: { type: Boolean, default: true }
+  }])
+  @ApiProperty({ description: 'Medications prescribed to the resident' })
+  medications: Record<string, any>[];
+
+  @Prop({ type: [CarePlan] })
+  @ApiProperty({ description: 'Care plans for the resident' })
+  carePlans: CarePlan[];
 }
 
 export const ResidentSchema = SchemaFactory.createForClass(Resident); 

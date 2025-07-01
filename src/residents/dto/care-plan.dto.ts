@@ -30,6 +30,12 @@ export class CarePlanDto {
   @IsString({ each: true })
   interventions?: string[];
 
+  @ApiProperty({ description: 'Care actions' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  actions?: string[];
+
   @ApiProperty({ description: 'Start date of care plan' })
   @IsOptional()
   @IsDate()

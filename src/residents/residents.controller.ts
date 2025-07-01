@@ -10,11 +10,13 @@ import { UpdateResidentDto } from './dto/update-resident.dto';
 import { VitalSignDto } from './dto/vital-sign.dto';
 import { CarePlanDto } from './dto/care-plan.dto';
 import { ActivityDto } from './dto/activity.dto';
+import { MedicationDto } from './dto/medication.dto';
+import { FamilyAccessGuard } from '../users/guards/family-access.guard';
 
 @ApiTags('residents')
 @Controller('residents')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class ResidentsController {
   constructor(private readonly residentsService: ResidentsService) {}
 
@@ -25,8 +27,8 @@ export class ResidentsController {
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Create a new resident (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Create a new resident' })
   @ApiResponse({ status: 201, description: 'Resident created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -35,8 +37,8 @@ export class ResidentsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get all residents (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Get all residents' })
   @ApiResponse({ status: 200, description: 'Residents retrieved successfully.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   findAll() {
@@ -44,8 +46,9 @@ export class ResidentsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get resident by ID (Admin and Staff only)' })
+  @UseGuards(FamilyAccessGuard)
+  @Roles(Role.Admin, Role.Staff, Role.FamilyMember)
+  @ApiOperation({ summary: 'Get a resident by ID' })
   @ApiResponse({ status: 200, description: 'Resident retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -55,8 +58,8 @@ export class ResidentsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Update resident by ID (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Update a resident' })
   @ApiResponse({ status: 200, description: 'Resident updated successfully.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -65,8 +68,8 @@ export class ResidentsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Delete resident by ID (Admin only)' })
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: 'Delete a resident' })
   @ApiResponse({ status: 200, description: 'Resident deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -75,8 +78,8 @@ export class ResidentsController {
   }
 
   @Patch(':id/assign-bed/:bedId')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Assign bed to resident (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Assign bed to resident' })
   @ApiResponse({ status: 200, description: 'Bed assigned successfully.' })
   @ApiResponse({ status: 404, description: 'Resident or bed not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -84,9 +87,9 @@ export class ResidentsController {
     return this.residentsService.assignBed(id, bedId);
   }
 
-  @Patch(':id/add-family-member/:familyMemberId')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Add family member to resident (Admin and Staff only)' })
+  @Post(':id/family-members/:familyMemberId')
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Add a family member to a resident' })
   @ApiResponse({ status: 200, description: 'Family member added successfully.' })
   @ApiResponse({ status: 404, description: 'Resident or family member not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -94,9 +97,9 @@ export class ResidentsController {
     return this.residentsService.addFamilyMember(id, familyMemberId);
   }
 
-  @Patch(':id/remove-family-member/:familyMemberId')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Remove family member from resident (Admin and Staff only)' })
+  @Delete(':id/family-members/:familyMemberId')
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Remove a family member from a resident' })
   @ApiResponse({ status: 200, description: 'Family member removed successfully.' })
   @ApiResponse({ status: 404, description: 'Resident or family member not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -106,8 +109,8 @@ export class ResidentsController {
 
   // Vital Signs endpoints
   @Post(':id/vital-signs')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Record vital signs for resident (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Record vital signs for resident' })
   @ApiResponse({ status: 201, description: 'Vital signs recorded successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
@@ -118,8 +121,9 @@ export class ResidentsController {
   }
 
   @Get(':id/vital-signs')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get vital signs for resident (Admin and Staff only)' })
+  @UseGuards(FamilyAccessGuard)
+  @Roles(Role.Admin, Role.Staff, Role.FamilyMember)
+  @ApiOperation({ summary: 'Get vital signs for resident' })
   @ApiResponse({ status: 200, description: 'Vital signs retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -129,20 +133,20 @@ export class ResidentsController {
 
   // Care Plan endpoints
   @Post(':id/care-plans')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Create care plan for resident (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Create care plan for resident' })
   @ApiResponse({ status: 201, description: 'Care plan created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   createCarePlan(@Param('id') id: string, @Body() carePlanDto: CarePlanDto) {
-    carePlanDto.residentId = id;
-    return this.residentsService.createCarePlan(carePlanDto);
+    return this.residentsService.createCarePlan(id, carePlanDto);
   }
 
   @Get(':id/care-plans')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get care plans for resident (Admin and Staff only)' })
+  @UseGuards(FamilyAccessGuard)
+  @Roles(Role.Admin, Role.Staff, Role.FamilyMember)
+  @ApiOperation({ summary: 'Get care plans for resident' })
   @ApiResponse({ status: 200, description: 'Care plans retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -152,8 +156,8 @@ export class ResidentsController {
 
   // Activity endpoints
   @Post(':id/activities')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Record activity for resident (Admin and Staff only)' })
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Record activity for resident' })
   @ApiResponse({ status: 201, description: 'Activity recorded successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
@@ -164,12 +168,64 @@ export class ResidentsController {
   }
 
   @Get(':id/activities')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Get activities for resident (Admin and Staff only)' })
+  @UseGuards(FamilyAccessGuard)
+  @Roles(Role.Admin, Role.Staff, Role.FamilyMember)
+  @ApiOperation({ summary: 'Get activities for resident' })
   @ApiResponse({ status: 200, description: 'Activities retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Resident not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   getActivities(@Param('id') id: string) {
     return this.residentsService.getActivities(id);
+  }
+
+  // Medication endpoints
+  @Post(':id/medications')
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Add medication for resident' })
+  @ApiResponse({ status: 201, description: 'Medication added successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 404, description: 'Resident not found.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  addMedication(@Param('id') id: string, @Body() medicationDto: MedicationDto) {
+    medicationDto.residentId = id;
+    return this.residentsService.addMedication(medicationDto);
+  }
+
+  @Get(':id/medications')
+  @UseGuards(FamilyAccessGuard)
+  @Roles(Role.Admin, Role.Staff, Role.FamilyMember)
+  @ApiOperation({ summary: 'Get medications for resident' })
+  @ApiResponse({ status: 200, description: 'Medications retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'Resident not found.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  getMedications(@Param('id') id: string) {
+    return this.residentsService.getMedications(id);
+  }
+
+  @Patch(':id/medications/:index')
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Update medication for resident' })
+  @ApiResponse({ status: 200, description: 'Medication updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 404, description: 'Resident not found.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  updateMedication(
+    @Param('id') id: string,
+    @Param('index') index: number,
+    @Body() medicationDto: MedicationDto
+  ) {
+    medicationDto.residentId = id;
+    return this.residentsService.updateMedication(id, index, medicationDto);
+  }
+
+  @Delete(':id/medications/:index')
+  @Roles(Role.Admin, Role.Staff)
+  @ApiOperation({ summary: 'Discontinue medication for resident' })
+  @ApiResponse({ status: 200, description: 'Medication discontinued successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 404, description: 'Resident not found.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  discontinueMedication(@Param('id') id: string, @Param('index') index: number) {
+    return this.residentsService.discontinueMedication(id, index);
   }
 } 

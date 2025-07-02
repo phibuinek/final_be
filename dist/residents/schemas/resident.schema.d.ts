@@ -1,32 +1,35 @@
 import { Document, Schema as MongooseSchema } from 'mongoose';
-export type ResidentDocument = Resident & Document;
-declare class CarePlan {
-    startDate: Date;
-    endDate: Date;
-    description: string;
-    actions: string[];
+declare class MedicationRecord {
+    medication_name: string;
+    dosage: string;
+    frequency: string;
 }
-export declare class Resident {
-    fullName: string;
-    dateOfBirth: Date;
+declare class EmergencyContact {
+    name: string;
+    phone: string;
+    relationship: string;
+}
+export declare class Resident extends Document {
+    full_name: string;
+    date_of_birth: Date;
     gender: string;
-    contactInfo: string;
-    medicalHistory: string;
-    allergies: string;
-    emergencyContact: string;
-    isActive: boolean;
-    bed: MongooseSchema.Types.ObjectId;
-    familyMembers: MongooseSchema.Types.ObjectId[];
-    medications: Record<string, any>[];
-    carePlans: CarePlan[];
+    admission_date: Date;
+    discharge_date?: Date;
+    family_member_id: MongooseSchema.Types.ObjectId;
+    medical_history: string;
+    current_medications: MedicationRecord[];
+    allergies: string[];
+    emergency_contact: EmergencyContact;
+    care_level: string;
+    status: string;
 }
-export declare const ResidentSchema: MongooseSchema<Resident, import("mongoose").Model<Resident, any, any, any, Document<unknown, any, Resident, any> & Resident & {
-    _id: import("mongoose").Types.ObjectId;
-} & {
+export declare const ResidentSchema: MongooseSchema<Resident, import("mongoose").Model<Resident, any, any, any, Document<unknown, any, Resident, any> & Resident & Required<{
+    _id: unknown;
+}> & {
     __v: number;
-}, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, Resident, Document<unknown, {}, import("mongoose").FlatRecord<Resident>, {}> & import("mongoose").FlatRecord<Resident> & {
-    _id: import("mongoose").Types.ObjectId;
-} & {
+}, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, Resident, Document<unknown, {}, import("mongoose").FlatRecord<Resident>, {}> & import("mongoose").FlatRecord<Resident> & Required<{
+    _id: unknown;
+}> & {
     __v: number;
 }>;
 export {};

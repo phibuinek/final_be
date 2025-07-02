@@ -14,29 +14,38 @@ export declare class ResidentsController {
     findOne(id: string): Promise<import("./schemas/resident.schema").Resident>;
     update(id: string, updateResidentDto: UpdateResidentDto): Promise<import("./schemas/resident.schema").Resident>;
     remove(id: string): Promise<import("./schemas/resident.schema").Resident>;
-    assignBed(id: string, bedId: string): Promise<import("./schemas/resident.schema").Resident>;
-    addFamilyMember(id: string, familyMemberId: string): Promise<import("./schemas/resident.schema").Resident>;
-    removeFamilyMember(id: string, familyMemberId: string): Promise<import("./schemas/resident.schema").Resident>;
+    assignBed(id: string, bedId: string): Promise<{
+        message: string;
+    }>;
+    updateFamilyMember(id: string, familyMemberId: string): Promise<import("./schemas/resident.schema").Resident>;
     recordVitalSign(id: string, vitalSignDto: VitalSignDto): Promise<any>;
     getVitalSigns(id: string): Promise<any[]>;
-    createCarePlan(id: string, carePlanDto: CarePlanDto): Promise<import("./schemas/resident.schema").Resident>;
-    getCarePlans(id: string): Promise<any>;
+    createCarePlan(id: string, carePlanDto: CarePlanDto): Promise<{
+        message: string;
+    }>;
+    getCarePlans(id: string): Promise<{
+        message: string;
+    }>;
     recordActivity(id: string, activityDto: ActivityDto): Promise<any>;
     getActivities(id: string): Promise<any[]>;
-    addMedication(id: string, medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, import("./schemas/resident.schema").Resident, {}> & import("./schemas/resident.schema").Resident & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    addMedication(id: string, medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, import("./schemas/resident.schema").Resident, {}> & import("./schemas/resident.schema").Resident & Required<{
+        _id: unknown;
+    }> & {
         __v: number;
     }>;
-    getMedications(id: string): Promise<Record<string, any>[]>;
-    updateMedication(id: string, index: number, medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, import("./schemas/resident.schema").Resident, {}> & import("./schemas/resident.schema").Resident & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    getMedications(id: string): Promise<{
+        medication_name: string;
+        dosage: string;
+        frequency: string;
+    }[]>;
+    updateMedication(id: string, index: number, medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, import("./schemas/resident.schema").Resident, {}> & import("./schemas/resident.schema").Resident & Required<{
+        _id: unknown;
+    }> & {
         __v: number;
     }>;
-    discontinueMedication(id: string, index: number): Promise<import("mongoose").Document<unknown, {}, import("./schemas/resident.schema").Resident, {}> & import("./schemas/resident.schema").Resident & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    discontinueMedication(id: string, index: number): Promise<import("mongoose").Document<unknown, {}, import("./schemas/resident.schema").Resident, {}> & import("./schemas/resident.schema").Resident & Required<{
+        _id: unknown;
+    }> & {
         __v: number;
     }>;
 }

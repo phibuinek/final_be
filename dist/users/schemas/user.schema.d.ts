@@ -1,14 +1,20 @@
 import { Document } from 'mongoose';
-import { Role } from '../../common/enums/role.enum';
 export declare class User extends Document {
     email: string;
     password: string;
     fullName: string;
-    roles: Role[];
-    isActive: boolean;
+    phone: string;
     username: string;
-    phoneNumber?: string;
+    role: string;
+    is_super_admin?: boolean;
+    position?: string;
+    qualification?: string;
+    join_date?: Date;
+    relationship?: string;
+    residents?: string[];
     address?: string;
+    isActive: boolean;
+    notes?: string;
 }
 export declare const UserSchema: import("mongoose").Schema<User, import("mongoose").Model<User, any, any, any, Document<unknown, any, User, any> & User & Required<{
     _id: unknown;

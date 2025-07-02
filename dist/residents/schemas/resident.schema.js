@@ -13,114 +13,129 @@ exports.ResidentSchema = exports.Resident = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const swagger_1 = require("@nestjs/swagger");
-let CarePlan = class CarePlan {
-    startDate;
-    endDate;
-    description;
-    actions;
+let MedicationRecord = class MedicationRecord {
+    medication_name;
+    dosage;
+    frequency;
 };
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Date)
-], CarePlan.prototype, "startDate", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", Date)
-], CarePlan.prototype, "endDate", void 0);
+    __metadata("design:type", String)
+], MedicationRecord.prototype, "medication_name", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
-], CarePlan.prototype, "description", void 0);
+], MedicationRecord.prototype, "dosage", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: [String], required: true }),
-    __metadata("design:type", Array)
-], CarePlan.prototype, "actions", void 0);
-CarePlan = __decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], MedicationRecord.prototype, "frequency", void 0);
+MedicationRecord = __decorate([
     (0, mongoose_1.Schema)({ _id: false })
-], CarePlan);
-let Resident = class Resident {
-    fullName;
-    dateOfBirth;
+], MedicationRecord);
+let EmergencyContact = class EmergencyContact {
+    name;
+    phone;
+    relationship;
+};
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], EmergencyContact.prototype, "name", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], EmergencyContact.prototype, "phone", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], EmergencyContact.prototype, "relationship", void 0);
+EmergencyContact = __decorate([
+    (0, mongoose_1.Schema)({ _id: false })
+], EmergencyContact);
+let Resident = class Resident extends mongoose_2.Document {
+    full_name;
+    date_of_birth;
     gender;
-    contactInfo;
-    medicalHistory;
+    admission_date;
+    discharge_date;
+    family_member_id;
+    medical_history;
+    current_medications;
     allergies;
-    emergencyContact;
-    isActive;
-    bed;
-    familyMembers;
-    medications;
-    carePlans;
+    emergency_contact;
+    care_level;
+    status;
 };
 exports.Resident = Resident;
 __decorate([
     (0, mongoose_1.Prop)({ required: true, trim: true }),
-    (0, swagger_1.ApiProperty)({ description: 'Full name of the resident' }),
+    (0, swagger_1.ApiProperty)({ description: 'Họ và tên đầy đủ của cư dân' }),
     __metadata("design:type", String)
-], Resident.prototype, "fullName", void 0);
+], Resident.prototype, "full_name", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
-    (0, swagger_1.ApiProperty)({ description: 'Date of birth of the resident' }),
+    (0, mongoose_1.Prop)({ required: true }),
+    (0, swagger_1.ApiProperty)({ description: 'Ngày sinh' }),
     __metadata("design:type", Date)
-], Resident.prototype, "dateOfBirth", void 0);
+], Resident.prototype, "date_of_birth", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ enum: ['male', 'female', 'other'] }),
-    (0, swagger_1.ApiProperty)({ description: 'Gender of the resident', enum: ['male', 'female', 'other'] }),
+    (0, mongoose_1.Prop)({ enum: ['male', 'female'], required: true }),
+    (0, swagger_1.ApiProperty)({ description: 'Giới tính', enum: ['male', 'female'] }),
     __metadata("design:type", String)
 ], Resident.prototype, "gender", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ unique: true, sparse: true }),
-    (0, swagger_1.ApiProperty)({ description: 'Contact information of the resident (must be unique)' }),
-    __metadata("design:type", String)
-], Resident.prototype, "contactInfo", void 0);
+    (0, mongoose_1.Prop)({ required: true }),
+    (0, swagger_1.ApiProperty)({ description: 'Ngày nhập viện' }),
+    __metadata("design:type", Date)
+], Resident.prototype, "admission_date", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
-    (0, swagger_1.ApiProperty)({ description: 'Medical history of the resident' }),
-    __metadata("design:type", String)
-], Resident.prototype, "medicalHistory", void 0);
+    (0, swagger_1.ApiProperty)({ description: 'Ngày xuất viện (nếu có)' }),
+    __metadata("design:type", Date)
+], Resident.prototype, "discharge_date", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
-    (0, swagger_1.ApiProperty)({ description: 'Allergies of the resident' }),
+    (0, mongoose_1.Prop)({ type: mongoose_2.Schema.Types.ObjectId, ref: 'User', required: true }),
+    (0, swagger_1.ApiProperty)({ description: 'ID thành viên gia đình phụ trách' }),
+    __metadata("design:type", mongoose_2.Schema.Types.ObjectId)
+], Resident.prototype, "family_member_id", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String }),
+    (0, swagger_1.ApiProperty)({ description: 'Tiền sử bệnh án' }),
     __metadata("design:type", String)
+], Resident.prototype, "medical_history", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [MedicationRecord], default: [] }),
+    (0, swagger_1.ApiProperty)({ description: 'Thuốc hiện tại đang sử dụng' }),
+    __metadata("design:type", Array)
+], Resident.prototype, "current_medications", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [String], default: [] }),
+    (0, swagger_1.ApiProperty)({ description: 'Danh sách dị ứng' }),
+    __metadata("design:type", Array)
 ], Resident.prototype, "allergies", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
-    (0, swagger_1.ApiProperty)({ description: 'Emergency contact information' }),
+    (0, mongoose_1.Prop)({ type: EmergencyContact, required: true }),
+    (0, swagger_1.ApiProperty)({ description: 'Thông tin liên hệ khẩn cấp' }),
+    __metadata("design:type", EmergencyContact)
+], Resident.prototype, "emergency_contact", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: String,
+        enum: ['basic', 'intermediate', 'intensive'],
+        default: 'basic'
+    }),
+    (0, swagger_1.ApiProperty)({ description: 'Mức độ chăm sóc cần thiết' }),
     __metadata("design:type", String)
-], Resident.prototype, "emergencyContact", void 0);
+], Resident.prototype, "care_level", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ default: true }),
-    (0, swagger_1.ApiProperty)({ description: 'Whether the resident is active' }),
-    __metadata("design:type", Boolean)
-], Resident.prototype, "isActive", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Schema.Types.ObjectId, ref: 'Bed' }),
-    (0, swagger_1.ApiProperty)({ description: 'The bed occupied by the resident' }),
-    __metadata("design:type", mongoose_2.Schema.Types.ObjectId)
-], Resident.prototype, "bed", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.Schema.Types.ObjectId, ref: 'FamilyMember' }] }),
-    (0, swagger_1.ApiProperty)({ description: 'Family members related to the resident' }),
-    __metadata("design:type", Array)
-], Resident.prototype, "familyMembers", void 0);
-__decorate([
-    (0, mongoose_1.Prop)([{
-            name: { type: String, required: true },
-            dosage: { type: String, required: true },
-            frequency: { type: String, required: true },
-            startDate: { type: Date, required: true },
-            endDate: Date,
-            instructions: String,
-            isActive: { type: Boolean, default: true }
-        }]),
-    (0, swagger_1.ApiProperty)({ description: 'Medications prescribed to the resident' }),
-    __metadata("design:type", Array)
-], Resident.prototype, "medications", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: [CarePlan] }),
-    (0, swagger_1.ApiProperty)({ description: 'Care plans for the resident' }),
-    __metadata("design:type", Array)
-], Resident.prototype, "carePlans", void 0);
+    (0, mongoose_1.Prop)({
+        type: String,
+        enum: ['active', 'discharged', 'deceased'],
+        default: 'active'
+    }),
+    (0, swagger_1.ApiProperty)({ description: 'Trạng thái hiện tại của cư dân' }),
+    __metadata("design:type", String)
+], Resident.prototype, "status", void 0);
 exports.Resident = Resident = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], Resident);

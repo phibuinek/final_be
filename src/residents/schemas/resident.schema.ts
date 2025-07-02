@@ -2,80 +2,87 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
-export type ResidentDocument = Resident & Document;
+@Schema({ _id: false })
+class MedicationRecord {
+  @Prop({ required: true })
+  medication_name: string;
+
+  @Prop({ required: true })
+  dosage: string;
+
+  @Prop({ required: true })
+  frequency: string;
+}
 
 @Schema({ _id: false })
-class CarePlan {
+class EmergencyContact {
   @Prop({ required: true })
-  startDate: Date;
-
-  @Prop()
-  endDate: Date;
+  name: string;
 
   @Prop({ required: true })
-  description: string;
+  phone: string;
 
-  @Prop({ type: [String], required: true })
-  actions: string[];
+  @Prop({ required: true })
+  relationship: string;
 }
 
 @Schema({ timestamps: true })
-export class Resident {
+export class Resident extends Document {
   @Prop({ required: true, trim: true })
-  @ApiProperty({ description: 'Full name of the resident' })
-  fullName: string;
+  @ApiProperty({ description: 'Họ và tên đầy đủ của cư dân' })
+  full_name: string;
 
-  @Prop()
-  @ApiProperty({ description: 'Date of birth of the resident' })
-  dateOfBirth: Date;
+  @Prop({ required: true })
+  @ApiProperty({ description: 'Ngày sinh' })
+  date_of_birth: Date;
 
-  @Prop({ enum: ['male', 'female', 'other'] })
-  @ApiProperty({ description: 'Gender of the resident', enum: ['male', 'female', 'other'] })
+  @Prop({ enum: ['male', 'female'], required: true })
+  @ApiProperty({ description: 'Giới tính', enum: ['male', 'female'] })
   gender: string;
 
-  @Prop({ unique: true, sparse: true })
-  @ApiProperty({ description: 'Contact information of the resident (must be unique)' })
-  contactInfo: string;
+  @Prop({ required: true })
+  @ApiProperty({ description: 'Ngày nhập viện' })
+  admission_date: Date;
 
   @Prop()
-  @ApiProperty({ description: 'Medical history of the resident' })
-  medicalHistory: string;
+  @ApiProperty({ description: 'Ngày xuất viện (nếu có)' })
+  discharge_date?: Date;
 
-  @Prop()
-  @ApiProperty({ description: 'Allergies of the resident' })
-  allergies: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  @ApiProperty({ description: 'ID thành viên gia đình phụ trách' })
+  family_member_id: MongooseSchema.Types.ObjectId;
 
-  @Prop()
-  @ApiProperty({ description: 'Emergency contact information' })
-  emergencyContact: string;
+  @Prop({ type: String })
+  @ApiProperty({ description: 'Tiền sử bệnh án' })
+  medical_history: string;
 
-  @Prop({ default: true })
-  @ApiProperty({ description: 'Whether the resident is active' })
-  isActive: boolean;
+  @Prop({ type: [MedicationRecord], default: [] })
+  @ApiProperty({ description: 'Thuốc hiện tại đang sử dụng' })
+  current_medications: MedicationRecord[];
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Bed' })
-  @ApiProperty({ description: 'The bed occupied by the resident' })
-  bed: MongooseSchema.Types.ObjectId;
+  @Prop({ type: [String], default: [] })
+  @ApiProperty({ description: 'Danh sách dị ứng' })
+  allergies: string[];
 
-  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'FamilyMember' }] })
-  @ApiProperty({ description: 'Family members related to the resident' })
-  familyMembers: MongooseSchema.Types.ObjectId[];
+  @Prop({ type: EmergencyContact, required: true })
+  @ApiProperty({ description: 'Thông tin liên hệ khẩn cấp' })
+  emergency_contact: EmergencyContact;
 
-  @Prop([{
-    name: { type: String, required: true },
-    dosage: { type: String, required: true },
-    frequency: { type: String, required: true },
-    startDate: { type: Date, required: true },
-    endDate: Date,
-    instructions: String,
-    isActive: { type: Boolean, default: true }
-  }])
-  @ApiProperty({ description: 'Medications prescribed to the resident' })
-  medications: Record<string, any>[];
+  @Prop({ 
+    type: String, 
+    enum: ['basic', 'intermediate', 'intensive'],
+    default: 'basic'
+  })
+  @ApiProperty({ description: 'Mức độ chăm sóc cần thiết' })
+  care_level: string;
 
-  @Prop({ type: [CarePlan] })
-  @ApiProperty({ description: 'Care plans for the resident' })
-  carePlans: CarePlan[];
+  @Prop({ 
+    type: String, 
+    enum: ['active', 'discharged', 'deceased'],
+    default: 'active'
+  })
+  @ApiProperty({ description: 'Trạng thái hiện tại của cư dân' })
+  status: string;
 }
 
 export const ResidentSchema = SchemaFactory.createForClass(Resident); 

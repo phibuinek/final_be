@@ -14,29 +14,38 @@ export declare class ResidentsService {
     findOne(id: string): Promise<Resident>;
     update(id: string, updateResidentDto: UpdateResidentDto): Promise<Resident>;
     remove(id: string): Promise<Resident>;
-    assignBed(residentId: string, bedId: string): Promise<Resident>;
-    addFamilyMember(residentId: string, familyMemberId: string): Promise<Resident>;
-    removeFamilyMember(residentId: string, familyMemberId: string): Promise<Resident>;
+    assignBed(residentId: string, bedId: string): Promise<{
+        message: string;
+    }>;
+    updateFamilyMember(residentId: string, familyMemberId: string): Promise<Resident>;
     recordVitalSign(vitalSignDto: VitalSignDto): Promise<any>;
     getVitalSigns(residentId: string): Promise<any[]>;
     recordActivity(activityDto: ActivityDto): Promise<any>;
     getActivities(residentId: string): Promise<any[]>;
-    addMedication(medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, Resident, {}> & Resident & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    addMedication(medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, Resident, {}> & Resident & Required<{
+        _id: unknown;
+    }> & {
         __v: number;
     }>;
-    getMedications(id: string): Promise<Record<string, any>[]>;
-    updateMedication(residentId: string, medicationIndex: number, medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, Resident, {}> & Resident & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    getMedications(id: string): Promise<{
+        medication_name: string;
+        dosage: string;
+        frequency: string;
+    }[]>;
+    updateMedication(residentId: string, medicationIndex: number, medicationDto: MedicationDto): Promise<import("mongoose").Document<unknown, {}, Resident, {}> & Resident & Required<{
+        _id: unknown;
+    }> & {
         __v: number;
     }>;
-    discontinueMedication(residentId: string, medicationIndex: number): Promise<import("mongoose").Document<unknown, {}, Resident, {}> & Resident & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    discontinueMedication(residentId: string, medicationIndex: number): Promise<import("mongoose").Document<unknown, {}, Resident, {}> & Resident & Required<{
+        _id: unknown;
+    }> & {
         __v: number;
     }>;
-    createCarePlan(residentId: string, carePlanDto: CarePlanDto): Promise<Resident>;
-    getCarePlans(residentId: string): Promise<any>;
+    createCarePlan(residentId: string, carePlanDto: CarePlanDto): Promise<{
+        message: string;
+    }>;
+    getCarePlans(residentId: string): Promise<{
+        message: string;
+    }>;
 }

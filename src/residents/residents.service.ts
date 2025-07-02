@@ -16,25 +16,16 @@ export class ResidentsService {
   ) {}
 
   async create(createResidentDto: CreateResidentDto): Promise<Resident> {
-    try {
-      const newResident = new this.residentModel(createResidentDto);
-      return await newResident.save();
-    } catch (error) {
-      if (error.code === 11000) {
-        // MongoDB duplicate key error
-        const duplicateField = Object.keys(error.keyPattern)[0];
-        throw new BadRequestException(`${duplicateField} already exists. Please use a different value.`);
-      }
-      throw error;
-    }
+    const createdResident = new this.residentModel(createResidentDto);
+    return createdResident.save();
   }
 
   async findAll(): Promise<Resident[]> {
-    return this.residentModel.find().exec();
+    return this.residentModel.find().populate('family_member_id', 'fullName phone').exec();
   }
 
   async findOne(id: string): Promise<Resident> {
-    const resident = await this.residentModel.findById(id).exec();
+    const resident = await this.residentModel.findById(id).populate('family_member_id', 'fullName phone').exec();
     if (!resident) {
       throw new NotFoundException(`Resident with ID ${id} not found`);
     }
@@ -42,90 +33,49 @@ export class ResidentsService {
   }
 
   async update(id: string, updateResidentDto: UpdateResidentDto): Promise<Resident> {
-    try {
-      const updatedResident = await this.residentModel
-        .findByIdAndUpdate(id, updateResidentDto, { new: true })
-        .exec();
-      
-      if (!updatedResident) {
-        throw new NotFoundException(`Resident with ID ${id} not found`);
-      }
-      
-      return updatedResident;
-    } catch (error) {
-      if (error.code === 11000) {
-        // MongoDB duplicate key error
-        const duplicateField = Object.keys(error.keyPattern)[0];
-        throw new BadRequestException(`${duplicateField} already exists. Please use a different value.`);
-      }
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw error;
+    const existingResident = await this.residentModel
+      .findByIdAndUpdate(id, updateResidentDto, { new: true })
+      .populate('family_member_id', 'fullName phone')
+      .exec();
+
+    if (!existingResident) {
+      throw new NotFoundException(`Resident with ID ${id} not found`);
     }
+    return existingResident;
   }
 
   async remove(id: string): Promise<Resident> {
     const deletedResident = await this.residentModel.findByIdAndDelete(id).exec();
-    
     if (!deletedResident) {
       throw new NotFoundException(`Resident with ID ${id} not found`);
     }
-    
     return deletedResident;
   }
 
-  async assignBed(residentId: string, bedId: string): Promise<Resident> {
+  async assignBed(residentId: string, bedId: string): Promise<{ message: string }> {
     const resident = await this.residentModel.findById(residentId).exec();
     
     if (!resident) {
       throw new NotFoundException(`Resident with ID ${residentId} not found`);
     }
 
-    resident.bed = bedId as any;
-    return resident.save();
+    return { message: 'Bed assignment should be handled through care plan assignments' };
   }
 
-  async addFamilyMember(residentId: string, familyMemberId: string): Promise<Resident> {
-    const resident = await this.residentModel.findById(residentId).exec();
+  async updateFamilyMember(residentId: string, familyMemberId: string): Promise<Resident> {
+    const resident = await this.residentModel.findByIdAndUpdate(
+      residentId,
+      { family_member_id: familyMemberId },
+      { new: true }
+    ).populate('family_member_id', 'fullName phone').exec();
     
     if (!resident) {
       throw new NotFoundException(`Resident with ID ${residentId} not found`);
     }
 
-    if (!resident.familyMembers) {
-      resident.familyMembers = [];
-    }
-
-    if (resident.familyMembers.includes(familyMemberId as any)) {
-      throw new BadRequestException('Family member already associated with this resident');
-    }
-
-    resident.familyMembers.push(familyMemberId as any);
-    return resident.save();
+    return resident;
   }
 
-  async removeFamilyMember(residentId: string, familyMemberId: string): Promise<Resident> {
-    const resident = await this.residentModel.findById(residentId).exec();
-    
-    if (!resident) {
-      throw new NotFoundException(`Resident with ID ${residentId} not found`);
-    }
-
-    if (!resident.familyMembers) {
-      throw new BadRequestException('Resident has no family members');
-    }
-
-    const index = resident.familyMembers.indexOf(familyMemberId as any);
-    if (index === -1) {
-      throw new BadRequestException('Family member not associated with this resident');
-    }
-
-    resident.familyMembers.splice(index, 1);
-    return resident.save();
-  }
-
-  // Vital Signs methods
   async recordVitalSign(vitalSignDto: VitalSignDto): Promise<any> {
     const resident = await this.residentModel.findById(vitalSignDto.residentId).exec();
     
@@ -133,8 +83,6 @@ export class ResidentsService {
       throw new NotFoundException(`Resident with ID ${vitalSignDto.residentId} not found`);
     }
 
-    // In a real application, this would save to a VitalSign collection
-    // For now, we'll just return the DTO with a mock ID
     return {
       id: 'mock-vital-sign-id',
       ...vitalSignDto,
@@ -149,8 +97,6 @@ export class ResidentsService {
       throw new NotFoundException(`Resident with ID ${residentId} not found`);
     }
 
-    // In a real application, this would query the VitalSign collection
-    // For now, we'll just return a mock response
     return [
       {
         id: 'mock-vital-sign-id',
@@ -166,7 +112,6 @@ export class ResidentsService {
     ];
   }
 
-  // Activity methods
   async recordActivity(activityDto: ActivityDto): Promise<any> {
     const resident = await this.residentModel.findById(activityDto.residentId).exec();
     
@@ -174,8 +119,6 @@ export class ResidentsService {
       throw new NotFoundException(`Resident with ID ${activityDto.residentId} not found`);
     }
 
-    // In a real application, this would save to an Activity collection
-    // For now, we'll just return the DTO with a mock ID
     return {
       id: 'mock-activity-id',
       ...activityDto,
@@ -190,8 +133,6 @@ export class ResidentsService {
       throw new NotFoundException(`Resident with ID ${residentId} not found`);
     }
 
-    // In a real application, this would query the Activity collection
-    // For now, we'll just return a mock response
     return [
       {
         id: 'mock-activity-id',
@@ -215,16 +156,12 @@ export class ResidentsService {
     }
 
     const medication = {
-      name: medicationDto.name,
+      medication_name: medicationDto.name,
       dosage: medicationDto.dosage,
-      frequency: medicationDto.frequency,
-      startDate: medicationDto.startDate,
-      endDate: medicationDto.endDate,
-      instructions: medicationDto.instructions,
-      isActive: true
+      frequency: medicationDto.frequency
     };
 
-    resident.medications.push(medication);
+    resident.current_medications.push(medication);
     return resident.save();
   }
 
@@ -233,7 +170,7 @@ export class ResidentsService {
     if (!resident) {
       throw new NotFoundException('Resident not found');
     }
-    return resident.medications;
+    return resident.current_medications;
   }
 
   async updateMedication(residentId: string, medicationIndex: number, medicationDto: MedicationDto) {
@@ -242,18 +179,14 @@ export class ResidentsService {
       throw new NotFoundException('Resident not found');
     }
 
-    if (medicationIndex < 0 || medicationIndex >= resident.medications.length) {
+    if (medicationIndex < 0 || medicationIndex >= resident.current_medications.length) {
       throw new BadRequestException('Invalid medication index');
     }
 
-    resident.medications[medicationIndex] = {
-      name: medicationDto.name,
+    resident.current_medications[medicationIndex] = {
+      medication_name: medicationDto.name,
       dosage: medicationDto.dosage,
-      frequency: medicationDto.frequency,
-      startDate: medicationDto.startDate,
-      endDate: medicationDto.endDate,
-      instructions: medicationDto.instructions,
-      isActive: true
+      frequency: medicationDto.frequency
     };
 
     return resident.save();
@@ -265,41 +198,29 @@ export class ResidentsService {
       throw new NotFoundException('Resident not found');
     }
 
-    if (medicationIndex < 0 || medicationIndex >= resident.medications.length) {
+    if (medicationIndex < 0 || medicationIndex >= resident.current_medications.length) {
       throw new BadRequestException('Invalid medication index');
     }
 
-    resident.medications[medicationIndex].isActive = false;
-    resident.medications[medicationIndex].endDate = new Date();
-
+    resident.current_medications.splice(medicationIndex, 1);
     return resident.save();
   }
 
-  // Care Plan methods
   async createCarePlan(
     residentId: string,
     carePlanDto: CarePlanDto,
-  ): Promise<Resident> {
-    const carePlanData = {
-      ...carePlanDto,
-      actions: carePlanDto.actions || [],
-      startDate: carePlanDto.startDate || new Date(),
-    };
-
-    const updatedResident = await this.residentModel.findByIdAndUpdate(
-      residentId,
-      { $push: { carePlans: carePlanData } },
-      { new: true }
-    ).exec();
-
-    if (!updatedResident) {
+  ): Promise<{ message: string }> {
+    const resident = await this.residentModel.findById(residentId);
+    if (!resident) {
       throw new NotFoundException(`Resident with ID ${residentId} not found`);
     }
-    return updatedResident;
+
+    return { message: 'Care plans should be handled through CarePlansService assignments' };
   }
 
-  async getCarePlans(residentId: string): Promise<any> {
+  async getCarePlans(residentId: string): Promise<{ message: string }> {
     const resident = await this.findOne(residentId);
-    return resident.carePlans;
+    
+    return { message: 'Care plans should be queried through CarePlansService assignments' };
   }
 } 

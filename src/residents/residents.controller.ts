@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -87,24 +87,14 @@ export class ResidentsController {
     return this.residentsService.assignBed(id, bedId);
   }
 
-  @Post(':id/family-members/:familyMemberId')
+  @Put(':id/family-member/:familyMemberId')
   @Roles(Role.Admin, Role.Staff)
-  @ApiOperation({ summary: 'Add a family member to a resident' })
-  @ApiResponse({ status: 200, description: 'Family member added successfully.' })
+  @ApiOperation({ summary: 'Update family member for a resident' })
+  @ApiResponse({ status: 200, description: 'Family member updated successfully.' })
   @ApiResponse({ status: 404, description: 'Resident or family member not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  addFamilyMember(@Param('id') id: string, @Param('familyMemberId') familyMemberId: string) {
-    return this.residentsService.addFamilyMember(id, familyMemberId);
-  }
-
-  @Delete(':id/family-members/:familyMemberId')
-  @Roles(Role.Admin, Role.Staff)
-  @ApiOperation({ summary: 'Remove a family member from a resident' })
-  @ApiResponse({ status: 200, description: 'Family member removed successfully.' })
-  @ApiResponse({ status: 404, description: 'Resident or family member not found.' })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  removeFamilyMember(@Param('id') id: string, @Param('familyMemberId') familyMemberId: string) {
-    return this.residentsService.removeFamilyMember(id, familyMemberId);
+  updateFamilyMember(@Param('id') id: string, @Param('familyMemberId') familyMemberId: string) {
+    return this.residentsService.updateFamilyMember(id, familyMemberId);
   }
 
   // Vital Signs endpoints

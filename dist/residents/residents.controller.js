@@ -56,11 +56,8 @@ let ResidentsController = class ResidentsController {
     assignBed(id, bedId) {
         return this.residentsService.assignBed(id, bedId);
     }
-    addFamilyMember(id, familyMemberId) {
-        return this.residentsService.addFamilyMember(id, familyMemberId);
-    }
-    removeFamilyMember(id, familyMemberId) {
-        return this.residentsService.removeFamilyMember(id, familyMemberId);
+    updateFamilyMember(id, familyMemberId) {
+        return this.residentsService.updateFamilyMember(id, familyMemberId);
     }
     recordVitalSign(id, vitalSignDto) {
         vitalSignDto.residentId = id;
@@ -172,10 +169,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ResidentsController.prototype, "assignBed", null);
 __decorate([
-    (0, common_1.Post)(':id/family-members/:familyMemberId'),
+    (0, common_1.Put)(':id/family-member/:familyMemberId'),
     (0, roles_decorator_1.Roles)(role_enum_1.Role.Admin, role_enum_1.Role.Staff),
-    (0, swagger_1.ApiOperation)({ summary: 'Add a family member to a resident' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Family member added successfully.' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update family member for a resident' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Family member updated successfully.' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Resident or family member not found.' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden.' }),
     __param(0, (0, common_1.Param)('id')),
@@ -183,20 +180,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
-], ResidentsController.prototype, "addFamilyMember", null);
-__decorate([
-    (0, common_1.Delete)(':id/family-members/:familyMemberId'),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.Admin, role_enum_1.Role.Staff),
-    (0, swagger_1.ApiOperation)({ summary: 'Remove a family member from a resident' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Family member removed successfully.' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Resident or family member not found.' }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden.' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Param)('familyMemberId')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", void 0)
-], ResidentsController.prototype, "removeFamilyMember", null);
+], ResidentsController.prototype, "updateFamilyMember", null);
 __decorate([
     (0, common_1.Post)(':id/vital-signs'),
     (0, roles_decorator_1.Roles)(role_enum_1.Role.Admin, role_enum_1.Role.Staff),

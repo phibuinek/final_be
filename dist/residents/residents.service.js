@@ -23,48 +23,28 @@ let ResidentsService = class ResidentsService {
         this.residentModel = residentModel;
     }
     async create(createResidentDto) {
-        try {
-            const newResident = new this.residentModel(createResidentDto);
-            return await newResident.save();
-        }
-        catch (error) {
-            if (error.code === 11000) {
-                const duplicateField = Object.keys(error.keyPattern)[0];
-                throw new common_1.BadRequestException(`${duplicateField} already exists. Please use a different value.`);
-            }
-            throw error;
-        }
+        const createdResident = new this.residentModel(createResidentDto);
+        return createdResident.save();
     }
     async findAll() {
-        return this.residentModel.find().exec();
+        return this.residentModel.find().populate('family_member_id', 'fullName phone').exec();
     }
     async findOne(id) {
-        const resident = await this.residentModel.findById(id).exec();
+        const resident = await this.residentModel.findById(id).populate('family_member_id', 'fullName phone').exec();
         if (!resident) {
             throw new common_1.NotFoundException(`Resident with ID ${id} not found`);
         }
         return resident;
     }
     async update(id, updateResidentDto) {
-        try {
-            const updatedResident = await this.residentModel
-                .findByIdAndUpdate(id, updateResidentDto, { new: true })
-                .exec();
-            if (!updatedResident) {
-                throw new common_1.NotFoundException(`Resident with ID ${id} not found`);
-            }
-            return updatedResident;
+        const existingResident = await this.residentModel
+            .findByIdAndUpdate(id, updateResidentDto, { new: true })
+            .populate('family_member_id', 'fullName phone')
+            .exec();
+        if (!existingResident) {
+            throw new common_1.NotFoundException(`Resident with ID ${id} not found`);
         }
-        catch (error) {
-            if (error.code === 11000) {
-                const duplicateField = Object.keys(error.keyPattern)[0];
-                throw new common_1.BadRequestException(`${duplicateField} already exists. Please use a different value.`);
-            }
-            if (error instanceof common_1.NotFoundException) {
-                throw error;
-            }
-            throw error;
-        }
+        return existingResident;
     }
     async remove(id) {
         const deletedResident = await this.residentModel.findByIdAndDelete(id).exec();
@@ -78,37 +58,14 @@ let ResidentsService = class ResidentsService {
         if (!resident) {
             throw new common_1.NotFoundException(`Resident with ID ${residentId} not found`);
         }
-        resident.bed = bedId;
-        return resident.save();
+        return { message: 'Bed assignment should be handled through care plan assignments' };
     }
-    async addFamilyMember(residentId, familyMemberId) {
-        const resident = await this.residentModel.findById(residentId).exec();
+    async updateFamilyMember(residentId, familyMemberId) {
+        const resident = await this.residentModel.findByIdAndUpdate(residentId, { family_member_id: familyMemberId }, { new: true }).populate('family_member_id', 'fullName phone').exec();
         if (!resident) {
             throw new common_1.NotFoundException(`Resident with ID ${residentId} not found`);
         }
-        if (!resident.familyMembers) {
-            resident.familyMembers = [];
-        }
-        if (resident.familyMembers.includes(familyMemberId)) {
-            throw new common_1.BadRequestException('Family member already associated with this resident');
-        }
-        resident.familyMembers.push(familyMemberId);
-        return resident.save();
-    }
-    async removeFamilyMember(residentId, familyMemberId) {
-        const resident = await this.residentModel.findById(residentId).exec();
-        if (!resident) {
-            throw new common_1.NotFoundException(`Resident with ID ${residentId} not found`);
-        }
-        if (!resident.familyMembers) {
-            throw new common_1.BadRequestException('Resident has no family members');
-        }
-        const index = resident.familyMembers.indexOf(familyMemberId);
-        if (index === -1) {
-            throw new common_1.BadRequestException('Family member not associated with this resident');
-        }
-        resident.familyMembers.splice(index, 1);
-        return resident.save();
+        return resident;
     }
     async recordVitalSign(vitalSignDto) {
         const resident = await this.residentModel.findById(vitalSignDto.residentId).exec();
@@ -177,15 +134,11 @@ let ResidentsService = class ResidentsService {
             throw new common_1.NotFoundException('Resident not found');
         }
         const medication = {
-            name: medicationDto.name,
+            medication_name: medicationDto.name,
             dosage: medicationDto.dosage,
-            frequency: medicationDto.frequency,
-            startDate: medicationDto.startDate,
-            endDate: medicationDto.endDate,
-            instructions: medicationDto.instructions,
-            isActive: true
+            frequency: medicationDto.frequency
         };
-        resident.medications.push(medication);
+        resident.current_medications.push(medication);
         return resident.save();
     }
     async getMedications(id) {
@@ -193,24 +146,20 @@ let ResidentsService = class ResidentsService {
         if (!resident) {
             throw new common_1.NotFoundException('Resident not found');
         }
-        return resident.medications;
+        return resident.current_medications;
     }
     async updateMedication(residentId, medicationIndex, medicationDto) {
         const resident = await this.residentModel.findById(residentId);
         if (!resident) {
             throw new common_1.NotFoundException('Resident not found');
         }
-        if (medicationIndex < 0 || medicationIndex >= resident.medications.length) {
+        if (medicationIndex < 0 || medicationIndex >= resident.current_medications.length) {
             throw new common_1.BadRequestException('Invalid medication index');
         }
-        resident.medications[medicationIndex] = {
-            name: medicationDto.name,
+        resident.current_medications[medicationIndex] = {
+            medication_name: medicationDto.name,
             dosage: medicationDto.dosage,
-            frequency: medicationDto.frequency,
-            startDate: medicationDto.startDate,
-            endDate: medicationDto.endDate,
-            instructions: medicationDto.instructions,
-            isActive: true
+            frequency: medicationDto.frequency
         };
         return resident.save();
     }
@@ -219,28 +168,22 @@ let ResidentsService = class ResidentsService {
         if (!resident) {
             throw new common_1.NotFoundException('Resident not found');
         }
-        if (medicationIndex < 0 || medicationIndex >= resident.medications.length) {
+        if (medicationIndex < 0 || medicationIndex >= resident.current_medications.length) {
             throw new common_1.BadRequestException('Invalid medication index');
         }
-        resident.medications[medicationIndex].isActive = false;
-        resident.medications[medicationIndex].endDate = new Date();
+        resident.current_medications.splice(medicationIndex, 1);
         return resident.save();
     }
     async createCarePlan(residentId, carePlanDto) {
-        const carePlanData = {
-            ...carePlanDto,
-            actions: carePlanDto.actions || [],
-            startDate: carePlanDto.startDate || new Date(),
-        };
-        const updatedResident = await this.residentModel.findByIdAndUpdate(residentId, { $push: { carePlans: carePlanData } }, { new: true }).exec();
-        if (!updatedResident) {
+        const resident = await this.residentModel.findById(residentId);
+        if (!resident) {
             throw new common_1.NotFoundException(`Resident with ID ${residentId} not found`);
         }
-        return updatedResident;
+        return { message: 'Care plans should be handled through CarePlansService assignments' };
     }
     async getCarePlans(residentId) {
         const resident = await this.findOne(residentId);
-        return resident.carePlans;
+        return { message: 'Care plans should be queried through CarePlansService assignments' };
     }
 };
 exports.ResidentsService = ResidentsService;

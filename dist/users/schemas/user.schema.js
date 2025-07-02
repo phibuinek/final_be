@@ -12,16 +12,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserSchema = exports.User = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
-const role_enum_1 = require("../../common/enums/role.enum");
 let User = class User extends mongoose_2.Document {
     email;
     password;
     fullName;
-    roles;
-    isActive;
+    phone;
     username;
-    phoneNumber;
+    role;
+    is_super_admin;
+    position;
+    qualification;
+    join_date;
+    relationship;
+    residents;
     address;
+    isActive;
+    notes;
 };
 exports.User = User;
 __decorate([
@@ -37,25 +43,53 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "fullName", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: [String], enum: role_enum_1.Role, default: [role_enum_1.Role.FamilyMember] }),
-    __metadata("design:type", Array)
-], User.prototype, "roles", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: Boolean, default: true }),
-    __metadata("design:type", Boolean)
-], User.prototype, "isActive", void 0);
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], User.prototype, "phone", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true, unique: true }),
     __metadata("design:type", String)
 ], User.prototype, "username", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ type: String, enum: ['admin', 'staff', 'family'], required: true }),
     __metadata("design:type", String)
-], User.prototype, "phoneNumber", void 0);
+], User.prototype, "role", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ type: Boolean, default: false }),
+    __metadata("design:type", Boolean)
+], User.prototype, "is_super_admin", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
+], User.prototype, "position", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
+], User.prototype, "qualification", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: Date }),
+    __metadata("design:type", Date)
+], User.prototype, "join_date", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
+], User.prototype, "relationship", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [{ type: String }], default: [] }),
+    __metadata("design:type", Array)
+], User.prototype, "residents", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String }),
     __metadata("design:type", String)
 ], User.prototype, "address", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: Boolean, default: true }),
+    __metadata("design:type", Boolean)
+], User.prototype, "isActive", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
+], User.prototype, "notes", void 0);
 exports.User = User = __decorate([
     (0, mongoose_1.Schema)({
         timestamps: true,
